@@ -89,10 +89,12 @@
         });
 
         const existing = await check.json();
+        const returnPage = localStorage.getItem("origin_page") || "https://alestore-official.github.io/";
+
         if (existing.length > 0) {
           alert("You are already registered.");
-          const returnPage = localStorage.getItem("origin_page");
-          window.location.href = returnPage || "https://alestore-official.github.io/";
+          localStorage.setItem("user_verified", "true"); // ✅ Set flag even if already registered
+          window.location.href = returnPage;
           return;
         }
 
@@ -105,8 +107,8 @@
 
         if (res.ok) {
           alert("Registration successful!");
-          const returnPage = localStorage.getItem("origin_page");
-          window.location.href = returnPage || "https://alestore-official.github.io/";
+          localStorage.setItem("user_verified", "true"); // ✅ Save registration flag
+          window.location.href = returnPage;
         } else {
           alert("Registration failed.");
         }
