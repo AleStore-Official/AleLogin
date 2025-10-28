@@ -51,6 +51,14 @@
       background-color: #0056b3;
     }
   </style>
+  <script>
+    // ✅ Block access if ReCAPTCHA not completed
+    const verified = localStorage.getItem("access_verified");
+    if (verified !== "true") {
+      localStorage.setItem("origin_page", window.location.href);
+      window.location.href = "https://alestore-official.github.io/AleCAPTCHA/";
+    }
+  </script>
 </head>
 <body>
   <div class="box">
