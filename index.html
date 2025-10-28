@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Registrazione</title>
+  <title>Register</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -54,12 +54,12 @@
 </head>
 <body>
   <div class="box">
-    <h2>Registrazione</h2>
+    <h2>Register</h2>
     <form id="form">
-      <input type="text" name="nome" placeholder="Nome" required />
+      <input type="text" name="nome" placeholder="Name" required />
       <input type="email" name="email" placeholder="Email" required />
       <input type="password" name="password" placeholder="Password" required />
-      <button type="submit">Registrati</button>
+      <button type="submit">Sign Up</button>
     </form>
   </div>
 
@@ -67,34 +67,33 @@
     document.getElementById("form").addEventListener("submit", async function (e) {
       e.preventDefault();
 
-      const dati = {
+      const data = {
         nome: this.nome.value,
         email: this.email.value,
-        password: this.password.value,
-        timestamp: new Date().toISOString()
+        password: this.password.value
       };
 
       try {
-        const res = await fetch("https://hsyyrcbibohwvbuwxwok.supabase.co", {
+        const res = await fetch("https://hsyyrcbibohwvbuwxwok.supabase.co/rest/v1/utenti", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo",
             "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo"
           },
-          body: JSON.stringify(dati)
+          body: JSON.stringify(data)
         });
 
         if (res.ok) {
-          alert("Registrazione completata!");
-          const ritorno = localStorage.getItem("pagina_origine");
-          window.location.href = ritorno || "https://alestore-official.github.io/";
+          alert("Registration successful!");
+          const returnPage = localStorage.getItem("pagina_origine");
+          window.location.href = returnPage || "https://alestore-official.github.io/";
         } else {
-          alert("Errore nella registrazione.");
+          alert("Registration failed.");
         }
       } catch (err) {
-        console.error("Errore:", err);
-        alert("Errore di connessione.");
+        console.error("Connection error:", err);
+        alert("Unable to connect to the server.");
       }
     });
   </script>
