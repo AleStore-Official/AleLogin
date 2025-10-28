@@ -52,7 +52,6 @@
     }
   </style>
   <script>
-    // ✅ Blocca accesso se ReCAPTCHA non completato
     const verified = localStorage.getItem("access_verified");
     if (verified !== "true") {
       localStorage.setItem("origin_page", window.location.href);
@@ -80,8 +79,6 @@
       const nome = this.nome.value;
       const cognome = this.cognome.value;
       const password = this.password.value;
-
-      // ✅ Accetta solo email Gmail
       const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
       if (!gmailRegex.test(email)) {
         alert("Registrazione consentita solo con email @gmail.com");
