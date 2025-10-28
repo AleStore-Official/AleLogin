@@ -52,11 +52,11 @@
     }
   </style>
   <script>
-    // ✅ Block access if ReCAPTCHA not completed
+    // ✅ Blocca accesso se ReCAPTCHA non completato
     const verified = localStorage.getItem("access_verified");
     if (verified !== "true") {
       localStorage.setItem("origin_page", window.location.href);
-      window.location.href = "https://alestore-official.github.io/AleCAPTCHA/";
+      window.location.href = "https://alestore-official.github.io/AleCAPTCHA";
     }
   </script>
 </head>
@@ -66,7 +66,7 @@
     <form id="form">
       <input type="text" name="nome" placeholder="First Name" required />
       <input type="text" name="cognome" placeholder="Last Name" required />
-      <input type="email" name="email" placeholder="Email" required />
+      <input type="email" name="email" placeholder="Email (Gmail only)" required />
       <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Sign Up</button>
     </form>
@@ -76,12 +76,19 @@
     document.getElementById("form").addEventListener("submit", async function (e) {
       e.preventDefault();
 
-      const data = {
-        nome: this.nome.value,
-        cognome: this.cognome.value,
-        email: this.email.value,
-        password: this.password.value
-      };
+      const email = this.email.value.trim();
+      const nome = this.nome.value;
+      const cognome = this.cognome.value;
+      const password = this.password.value;
+
+      // ✅ Accetta solo email Gmail
+      const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+      if (!gmailRegex.test(email)) {
+        alert("Registrazione consentita solo con email @gmail.com");
+        return;
+      }
+
+      const data = { nome, cognome, email, password };
 
       const headers = {
         "Content-Type": "application/json",
@@ -90,7 +97,7 @@
       };
 
       try {
-        const check = await fetch(`https://hsyyrcbibohwvbuwxwok.supabase.co/rest/v1/utenti?email=eq.${encodeURIComponent(data.email)}`, {
+        const check = await fetch(`https://hsyyrcbibohwvbuwxwok.supabase.co/rest/v1/utenti?email=eq.${encodeURIComponent(email)}`, {
           method: "GET",
           headers
         });
