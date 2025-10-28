@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Registrazione</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .box {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>Registrazione</h2>
+    <form id="form">
+      <input type="text" name="nome" placeholder="Nome" required />
+      <input type="email" name="email" placeholder="Email" required />
+      <input type="password" name="password" placeholder="Password" required />
+      <button type="submit">Registrati</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById("form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const dati = {
+        nome: this.nome.value,
+        email: this.email.value,
+        password: this.password.value,
+        timestamp: new Date().toISOString()
+      };
+
+      try {
+        const res = await fetch("https://hsyyrcbibohwvbuwxwok.supabase.co", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo",
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo"
+          },
+          body: JSON.stringify(dati)
+        });
+
+        if (res.ok) {
+          alert("Registrazione completata!");
+          const ritorno = localStorage.getItem("pagina_origine");
+          window.location.href = ritorno || "https://alestore-official.github.io/";
+        } else {
+          alert("Errore nella registrazione.");
+        }
+      } catch (err) {
+        console.error("Errore:", err);
+        alert("Errore di connessione.");
+      }
+    });
+  </script>
+</body>
+</html>
