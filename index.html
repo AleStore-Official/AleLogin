@@ -66,7 +66,7 @@
       <input type="text" name="nome" placeholder="First Name" required />
       <input type="text" name="cognome" placeholder="Last Name" required />
       <input type="email" name="email" placeholder="Email (Gmail only)" required />
-      <input type="password" name="password" placeholder="Password" required />
+      <input type="password" name="password" placeholder="Password (min. 8 characters)" required />
       <button type="submit">Sign Up</button>
     </form>
   </div>
@@ -76,12 +76,30 @@
       e.preventDefault();
 
       const email = this.email.value.trim();
-      const nome = this.nome.value;
-      const cognome = this.cognome.value;
+      const nome = this.nome.value.trim();
+      const cognome = this.cognome.value.trim();
       const password = this.password.value;
+
       const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+      const nameRegex = /^[A-Za-z]{2,}$/;
+
       if (!gmailRegex.test(email)) {
-        alert("Registrazione consentita solo con email @gmail.com");
+        alert("Registration is allowed only with @gmail.com addresses.");
+        return;
+      }
+
+      if (!nameRegex.test(nome)) {
+        alert("First name must be at least 2 letters with no numbers or symbols.");
+        return;
+      }
+
+      if (!nameRegex.test(cognome)) {
+        alert("Last name must be at least 2 letters with no numbers or symbols.");
+        return;
+      }
+
+      if (password.length < 8) {
+        alert("Password must be at least 8 characters long.");
         return;
       }
 
