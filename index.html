@@ -56,8 +56,8 @@
   <div class="box">
     <h2>Register</h2>
     <form id="form">
-      <input type="text" name="name" placeholder="First Name" required />
-      <input type="text" name="surname" placeholder="Last Name" required />
+      <input type="text" name="nome" placeholder="First Name" required />
+      <input type="text" name="cognome" placeholder="Last Name" required />
       <input type="email" name="email" placeholder="Email" required />
       <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Sign Up</button>
@@ -65,29 +65,55 @@
   </div>
 
   <script>
+    // 🔐 Block access if reCAPTCHA was not passed
+    if (!localStorage.getItem("access_verified")) {
+      window.location.href = "https://alestore-official.github.io/AleCAPTCHA";
+    }
+
     document.getElementById("form").addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const data = {
-        nome: this.name.value,
-        cognome: this.surname.value,
+        nome: this.nome.value,
+        cognome: this.cognome.value,
         email: this.email.value,
         password: this.password.value
       };
 
+      const headers = {
+        "Content-Type": "application/json",
+        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo",
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo"
+      };
+
       try {
+        // 🔍 Check if email already exists
+        const check = await fetch(`https://hsyyrcbibohwvbuwxwok.supabase.co/rest/v1/utenti?email=eq.${encodeURIComponent(data.email)}`, {
+          method: "GET",
+          headers
+        });
+
+        const existing = await check.json();
+        if (existing.length > 0) {
+          alert("You are already registered.");
+          localStorage.setItem("utente_registrato", "true");
+          localStorage.removeItem("access_verified");
+          const returnPage = localStorage.getItem("origin_page");
+          window.location.href = returnPage || "https://alestore-official.github.io/";
+          return;
+        }
+
+        // 📝 Register new user
         const res = await fetch("https://hsyyrcbibohwvbuwxwok.supabase.co/rest/v1/utenti", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo",
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo"
-          },
+          headers,
           body: JSON.stringify(data)
         });
 
         if (res.ok) {
           alert("Registration successful!");
+          localStorage.setItem("utente_registrato", "true");
+          localStorage.removeItem("access_verified");
           const returnPage = localStorage.getItem("origin_page");
           window.location.href = returnPage || "https://alestore-official.github.io/";
         } else {
