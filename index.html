@@ -82,7 +82,6 @@
       };
 
       try {
-        // Check if the email is already registered
         const check = await fetch(`https://hsyyrcbibohwvbuwxwok.supabase.co/rest/v1/utenti?email=eq.${encodeURIComponent(data.email)}`, {
           method: "GET",
           headers
@@ -93,12 +92,11 @@
 
         if (existing.length > 0) {
           alert("You are already registered.");
-          localStorage.setItem("user_verified", "true"); // ✅ Set flag even if already registered
+          localStorage.setItem("user_verified", "true");
           window.location.href = returnPage;
           return;
         }
 
-        // Proceed with registration
         const res = await fetch("https://hsyyrcbibohwvbuwxwok.supabase.co/rest/v1/utenti", {
           method: "POST",
           headers,
@@ -107,16 +105,9 @@
 
         if (res.ok) {
           alert("Registration successful!");
-          localStorage.setItem("user_verified", "true"); // ✅ Save registration flag
+          localStorage.setItem("user_verified", "true");
           window.location.href = returnPage;
         } else {
           alert("Registration failed.");
         }
       } catch (err) {
-        console.error("Connection error:", err);
-        alert("Unable to connect to the server.");
-      }
-    });
-  </script>
-</body>
-</html>
