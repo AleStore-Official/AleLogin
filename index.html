@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AleStore Videogiochi – Access</title>
+  <title>Register</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -61,13 +61,13 @@
 </head>
 <body>
   <div class="box">
-    <h2>AleStore Videogiochi – Register or Login</h2>
+    <h2>Register</h2>
     <form id="form">
       <input type="text" name="nome" placeholder="First Name" required />
       <input type="text" name="cognome" placeholder="Last Name" required />
       <input type="email" name="email" placeholder="Email (Gmail only)" required />
       <input type="password" name="password" placeholder="Password (min. 8 characters)" required />
-      <button type="submit">Continue</button>
+      <button type="submit">Sign Up</button>
     </form>
     <p id="message"></p>
   </div>
@@ -95,7 +95,7 @@
       const nameRegex = /^[A-Za-z]{2,}$/;
 
       if (!gmailRegex.test(email)) {
-        alert("Registration is allowed only with @gmail.com addresses.");
+        alert("Only @gmail.com addresses are allowed.");
         return;
       }
       if (!nameRegex.test(nome) || !nameRegex.test(cognome)) {
@@ -109,33 +109,7 @@
 
       const returnPage = localStorage.getItem("origin_page") || "https://alestore-official.github.io/";
 
-      // Try login
-      const { data: loginData } = await supabase.auth.signInWithPassword({ email, password });
-
-      if (loginData?.user) {
-        const { data: profilo } = await supabase
-          .from("utenti_alestore")
-          .select("nome, cognome")
-          .eq("user_id", loginData.user.id)
-          .single();
-
-        if (profilo?.nome === nome && profilo?.cognome === cognome) {
-          if (!loginData.user.email_confirmed_at) {
-            alert("📧 Please confirm your email before accessing.");
-            return;
-          }
-          alert("✅ Access granted.");
-          localStorage.setItem("user_verified", "true");
-          window.location.href = returnPage;
-        } else {
-          alert("❌ Name or surname does not match.");
-          await supabase.auth.signOut();
-        }
-        return;
-      }
-
-      // Register new user
-      const { data: signupData, error: signupError } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -143,18 +117,18 @@
         }
       });
 
-      if (signupError) {
-        alert("❌ Registration failed: " + signupError.message);
+      if (error) {
+        message.textContent = "❌ Registration failed: " + error.message;
         return;
       }
 
-      await supabase.from("utenti_alestore").insert({
-        user_id: signupData.user.id,
+      await supabase.from("utenti").insert({
+        user_id: data.user.id,
         nome,
         cognome
       });
 
-      alert("📧 Registration successful! Check your email to confirm before accessing.");
+      message.textContent = "📧 Registration successful! Check your email to confirm before accessing.";
     });
   </script>
 </body>
