@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Register</title>
+  <title>AleStore Videogiochi – Access</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -61,21 +61,32 @@
 </head>
 <body>
   <div class="box">
-    <h2>Register</h2>
+    <h2>AleStore Videogiochi – Register or Login</h2>
     <form id="form">
       <input type="text" name="nome" placeholder="First Name" required />
       <input type="text" name="cognome" placeholder="Last Name" required />
       <input type="email" name="email" placeholder="Email (Gmail only)" required />
       <input type="password" name="password" placeholder="Password (min. 8 characters)" required />
-      <button type="submit">Sign Up</button>
+      <button type="submit">Continue</button>
     </form>
+    <p id="message"></p>
   </div>
 
-  <script>
-    document.getElementById("form").addEventListener("submit", async function (e) {
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js';
+
+    const supabase = createClient(
+      'https://hsyyrcbibohwvbuwxwok.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo'
+    );
+
+    const form = document.getElementById("form");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
-      const email = this.email.value.trim();
+      const email = this.email.value.trim().toLowerCase();
       const nome = this.nome.value.trim();
       const cognome = this.cognome.value.trim();
       const password = this.password.value;
@@ -87,63 +98,63 @@
         alert("Registration is allowed only with @gmail.com addresses.");
         return;
       }
-
-      if (!nameRegex.test(nome)) {
-        alert("First name must be at least 2 letters with no numbers or symbols.");
+      if (!nameRegex.test(nome) || !nameRegex.test(cognome)) {
+        alert("Name and surname must be at least 2 letters, no numbers or symbols.");
         return;
       }
-
-      if (!nameRegex.test(cognome)) {
-        alert("Last name must be at least 2 letters with no numbers or symbols.");
-        return;
-      }
-
       if (password.length < 8) {
-        alert("Password must be at least 8 characters long.");
+        alert("Password must be at least 8 characters.");
         return;
       }
 
-      const data = { nome, cognome, email, password };
+      const returnPage = localStorage.getItem("origin_page") || "https://alestore-official.github.io/";
 
-      const headers = {
-        "Content-Type": "application/json",
-        "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo",
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo"
-      };
+      // Try login
+      const { data: loginData } = await supabase.auth.signInWithPassword({ email, password });
 
-      try {
-        const check = await fetch(`https://hsyyrcbibohwvbuwxwok.supabase.co/rest/v1/utenti?email=eq.${encodeURIComponent(email)}`, {
-          method: "GET",
-          headers
-        });
+      if (loginData?.user) {
+        const { data: profilo } = await supabase
+          .from("utenti_alestore")
+          .select("nome, cognome")
+          .eq("user_id", loginData.user.id)
+          .single();
 
-        const existing = await check.json();
-        const returnPage = localStorage.getItem("origin_page") || "https://alestore-official.github.io/";
-
-        if (existing.length > 0) {
-          alert("You are already registered.");
-          localStorage.setItem("user_verified", "true");
-          window.location.href = returnPage;
-          return;
-        }
-
-        const res = await fetch("https://hsyyrcbibohwvbuwxwok.supabase.co/rest/v1/utenti", {
-          method: "POST",
-          headers,
-          body: JSON.stringify(data)
-        });
-
-        if (res.ok) {
-          alert("Registration successful!");
+        if (profilo?.nome === nome && profilo?.cognome === cognome) {
+          if (!loginData.user.email_confirmed_at) {
+            alert("📧 Please confirm your email before accessing.");
+            return;
+          }
+          alert("✅ Access granted.");
           localStorage.setItem("user_verified", "true");
           window.location.href = returnPage;
         } else {
-          alert("Registration failed.");
+          alert("❌ Name or surname does not match.");
+          await supabase.auth.signOut();
         }
-      } catch (err) {
-        console.error("Connection error:", err);
-        alert("Unable to connect to the server.");
+        return;
       }
+
+      // Register new user
+      const { data: signupData, error: signupError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: returnPage
+        }
+      });
+
+      if (signupError) {
+        alert("❌ Registration failed: " + signupError.message);
+        return;
+      }
+
+      await supabase.from("utenti_alestore").insert({
+        user_id: signupData.user.id,
+        nome,
+        cognome
+      });
+
+      alert("📧 Registration successful! Check your email to confirm before accessing.");
     });
   </script>
 </body>
