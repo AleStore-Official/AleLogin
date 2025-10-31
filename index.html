@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Register</title>
+  <title>Register or Access AleStore</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -50,26 +50,36 @@
     button:hover {
       background-color: #0056b3;
     }
-  </style>
-  <script>
-    const verified = localStorage.getItem("access_verified");
-    if (verified !== "true") {
-      localStorage.setItem("origin_page", window.location.href);
-      window.location.href = "https://alestore-official.github.io/AleCAPTCHA";
+    .alert {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 15px;
     }
-  </script>
+    .alert.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .alert.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
 </head>
 <body>
   <div class="box">
-    <h2>Register</h2>
+    <h2 id="form-title">Register or Access AleStore</h2>
     <form id="form">
       <input type="text" name="nome" placeholder="First Name" required />
       <input type="text" name="cognome" placeholder="Last Name" required />
       <input type="email" name="email" placeholder="Email (Gmail only)" required />
       <input type="password" name="password" placeholder="Password (min. 8 characters)" required />
-      <button type="submit">Sign Up</button>
+      <button type="submit">Continue</button>
     </form>
-    <p id="message"></p>
+    <div id="alert-box"></div>
   </div>
 
   <script type="module">
@@ -81,7 +91,11 @@
     );
 
     const form = document.getElementById("form");
-    const message = document.getElementById("message");
+    const alertBox = document.getElementById("alert-box");
+
+    function showAlert(message, type) {
+      alertBox.innerHTML = `<div class="alert ${type}">${message}</div>`;
+    }
 
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
@@ -95,40 +109,55 @@
       const nameRegex = /^[A-Za-z]{2,}$/;
 
       if (!gmailRegex.test(email)) {
-        alert("Only @gmail.com addresses are allowed.");
+        showAlert("Only @gmail.com addresses are allowed.", "error");
         return;
       }
       if (!nameRegex.test(nome) || !nameRegex.test(cognome)) {
-        alert("Name and surname must be at least 2 letters, no numbers or symbols.");
+        showAlert("Name and surname must be at least 2 letters.", "error");
         return;
       }
       if (password.length < 8) {
-        alert("Password must be at least 8 characters.");
+        showAlert("Password must be at least 8 characters.", "error");
         return;
       }
 
-      const returnPage = localStorage.getItem("origin_page") || "https://alestore-official.github.io/";
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
 
-      const { data, error } = await supabase.auth.signUp({
+      if (loginData?.user) {
+        const { data: profilo } = await supabase
+          .from("utenti")
+          .select("nome, cognome, email, password")
+          .eq("email", email)
+          .eq("password", password)
+          .single();
+
+        if (profilo?.nome === nome && profilo?.cognome === cognome) {
+          localStorage.setItem("user_verified", "true");
+          showAlert("✅ Access granted. Redirecting...", "success");
+          setTimeout(() => {
+            window.location.href = "https://alestore-official.github.io/AleInfo.html";
+          }, 1500);
+        } else {
+          showAlert("❌ Name or surname does not match.", "error");
+        }
+        return;
+      }
+
+      const { data: signupData, error: signupError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: returnPage
+          emailRedirectTo: window.location.href
         }
       });
 
-      if (error) {
-        message.textContent = "❌ Registration failed: " + error.message;
+      if (signupError) {
+        showAlert("❌ Registration failed: " + signupError.message, "error");
         return;
       }
 
-      await supabase.from("utenti").insert({
-        user_id: data.user.id,
-        nome,
-        cognome
-      });
-
-      message.textContent = "📧 Registration successful! Check your email to confirm before accessing.";
+      await supabase.from("utenti").insert({ nome, cognome, email, password });
+      showAlert("📧 Registration successful! Check your email to confirm before accessing.", "success");
     });
   </script>
 </body>
