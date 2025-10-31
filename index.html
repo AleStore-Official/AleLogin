@@ -110,7 +110,8 @@
 
       if (user) {
         showAlert("✅ Access granted. Redirecting...", "success");
-        const origin = localStorage.getItem("origin_page") || "AleInfo.html";
+        localStorage.setItem("access_verified", "true");
+        const origin = localStorage.getItem("origin_page") || "https://alestore-official.github.io/AleInfo.html";
         setTimeout(() => {
           window.location.href = origin;
         }, 1500);
