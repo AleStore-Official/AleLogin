@@ -70,6 +70,16 @@
   </style>
 </head>
 <body>
+  <script>
+    (function () {
+      const verified = localStorage.getItem("access_verified");
+      if (verified !== "true") {
+        localStorage.setItem("origin_page", window.location.href);
+        window.location.href = "https://alestore-official.github.io/AleCAPTCHA";
+      }
+    })();
+  </script>
+
   <div class="box">
     <h2>Login to AleStore</h2>
     <form id="form">
@@ -111,6 +121,7 @@
       if (user) {
         showAlert("✅ Access granted. Redirecting...", "success");
         localStorage.setItem("access_verified", "true");
+        localStorage.setItem("user_verified", "true");
         const origin = localStorage.getItem("origin_page") || "https://alestore-official.github.io/AleInfo.html";
         setTimeout(() => {
           window.location.href = origin;
