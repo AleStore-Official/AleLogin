@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Register or Access AleStore</title>
+  <title>Register to AleStore</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -67,18 +67,25 @@
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
+    a {
+      display: block;
+      margin-top: 10px;
+      color: #007bff;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
   <div class="box">
-    <h2 id="form-title">Register or Access AleStore</h2>
+    <h2>Register to AleStore</h2>
     <form id="form">
       <input type="text" name="nome" placeholder="First Name" required />
       <input type="text" name="cognome" placeholder="Last Name" required />
       <input type="email" name="email" placeholder="Email (Gmail only)" required />
       <input type="password" name="password" placeholder="Password (min. 8 characters)" required />
-      <button type="submit">Continue</button>
+      <button type="submit">Sign Up</button>
     </form>
+    <a href="login.html">Already registered? Login</a>
     <div id="alert-box"></div>
   </div>
 
@@ -121,43 +128,32 @@
         return;
       }
 
-      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+      const { data: existing } = await supabase
+        .from("utenti")
+        .select("email")
+        .eq("email", email);
 
-      if (loginData?.user) {
-        const { data: profilo } = await supabase
-          .from("utenti")
-          .select("nome, cognome, email, password")
-          .eq("email", email)
-          .eq("password", password)
-          .single();
-
-        if (profilo?.nome === nome && profilo?.cognome === cognome) {
-          localStorage.setItem("user_verified", "true");
-          showAlert("✅ Access granted. Redirecting...", "success");
-          setTimeout(() => {
-            window.location.href = "https://alestore-official.github.io/AleInfo.html";
-          }, 1500);
-        } else {
-          showAlert("❌ Name or surname does not match.", "error");
-        }
+      if (existing.length > 0) {
+        showAlert("Email already registered. Please log in.", "error");
         return;
       }
 
-      const { data: signupData, error: signupError } = await supabase.auth.signUp({
+      localStorage.setItem("pending_user", JSON.stringify({ nome, cognome, email, password }));
+
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: window.location.href
+          emailRedirectTo: "confirm.html"
         }
       });
 
-      if (signupError) {
-        showAlert("❌ Registration failed: " + signupError.message, "error");
+      if (error) {
+        showAlert("❌ Registration failed: " + error.message, "error");
         return;
       }
 
-      await supabase.from("utenti").insert({ nome, cognome, email, password });
-      showAlert("📧 Registration successful! Check your email to confirm before accessing.", "success");
+      showAlert("📧 Registration successful! Check your email to confirm.", "success");
     });
   </script>
 </body>
