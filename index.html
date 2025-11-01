@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Login to AleStore</title>
+  <title>Login AleStore</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
@@ -73,20 +73,24 @@
       const email = form.email.value.trim().toLowerCase();
       const password = form.password.value;
 
-      // Cerca l'utente nella tabella 'utenti' confrontando email e password
       const { data, error } = await supabase
         .from("utenti")
         .select("*")
         .eq("email", email)
         .eq("password", password)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
-        alert("❌ Invalid credentials.");
+      if (error) {
+        console.error("Supabase error:", error.message);
+        alert("⚠️ Errore di accesso al database.");
         return;
       }
 
-      // Login riuscito
+      if (!data) {
+        alert("❌ Credenziali non valide.");
+        return;
+      }
+
       localStorage.setItem("access_verified", "true");
       localStorage.setItem("user_verified", "true");
       localStorage.setItem("user_info", JSON.stringify(data));
