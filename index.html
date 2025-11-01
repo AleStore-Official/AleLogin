@@ -74,6 +74,14 @@
       const email = form.email.value.trim().toLowerCase();
       const password = form.password.value;
 
+      // Check if email is confirmed via Supabase Auth
+      const { data: authData } = await supabase.auth.getUser();
+      if (!authData?.user?.email_confirmed_at) {
+        alert("❌ Email not confirmed. Please check your inbox.");
+        return;
+      }
+
+      // Check credentials in 'users' table
       const { data, error } = await supabase
         .from("users")
         .select("*")
