@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Login to AleStore</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://alestore-official.github.io/AleCAPTCHA/control.js"></script>
   <style>
     body {
       background: #f4f4f4;
@@ -65,7 +64,7 @@
     import { createClient } from 'https://esm.sh/@supabase/supabase-js';
     const supabase = createClient(
       'https://hsyyrcbibohwvbuwxwok.supabase.co',
-      'YOUR_SUPABASE_ANON_KEY'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo'
     );
 
     const form = document.getElementById("form");
@@ -74,14 +73,7 @@
       const email = form.email.value.trim().toLowerCase();
       const password = form.password.value;
 
-      // Check if email is confirmed via Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-      if (authError || !authData?.user?.email_confirmed_at) {
-        alert("❌ Email not confirmed. Please check your inbox.");
-        return;
-      }
-
-      // Check credentials in 'utenti' table
+      // Verifica credenziali nella tabella 'utenti'
       const { data, error } = await supabase
         .from("utenti")
         .select("*")
@@ -94,7 +86,7 @@
       } else {
         localStorage.setItem("access_verified", "true");
         localStorage.setItem("user_verified", "true");
-        window.location.href = localStorage.getItem("origin_page") || "https://alestore-official.github.io/AleInfo.html";
+        window.location.href = localStorage.getItem("origin_page") || "https://alestore-official.github.io/AleInfo";
       }
     });
   </script>
