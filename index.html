@@ -5,18 +5,57 @@
   <title>Login to AleStore</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { background: #f4f4f4; font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .box { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; max-width: 400px; width: 100%; }
-    h2 { margin-bottom: 20px; color: #333; }
-    input, button { width: 100%; padding: 12px; margin: 10px 0; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; }
-    button { background: #007bff; color: #fff; border: none; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .link { display: block; margin-top: 20px; color: #007bff; text-decoration: none; font-size: 14px; }
+    body {
+      background: #f4f4f4;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .box {
+      background: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .link {
+      display: block;
+      margin-top: 20px;
+      color: #007bff;
+      text-decoration: none;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <div class="box">
-    <h2>Login</h2>
+    <h2>🔐 Login</h2>
     <form id="form">
       <input type="email" name="email" placeholder="Email" required />
       <input type="password" name="password" placeholder="Password" required />
@@ -38,27 +77,24 @@
       const email = form.email.value.trim().toLowerCase();
       const password = form.password.value;
 
-      const { data, error } = await supabase
-        .from("utenti")
-        .select("*")
-        .eq("email", email)
-        .eq("password", password)
-        .maybeSingle();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
 
       if (error) {
-        console.error("Supabase error:", error.message);
-        alert("⚠️ Database access error.");
+        alert("❌ " + error.message);
         return;
       }
 
-      if (!data) {
-        alert("❌ Invalid credentials.");
+      if (!data.user.email_confirmed_at) {
+        alert("⚠️ Please confirm your email before logging in.");
         return;
       }
 
       localStorage.setItem("access_verified", "true");
       localStorage.setItem("user_verified", "true");
-      localStorage.setItem("user_info", JSON.stringify(data));
+      localStorage.setItem("user_info", JSON.stringify(data.user));
       window.location.href = "https://alestore-official.github.io/AleInfo";
     });
   </script>
