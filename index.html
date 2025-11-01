@@ -73,35 +73,18 @@
       const email = form.email.value.trim().toLowerCase();
       const password = form.password.value;
 
-      // Login con Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (authError || !authData.session) {
+      if (error || !data.session) {
         alert("❌ Invalid credentials or email not confirmed.");
         return;
       }
 
-      // Recupera i dati utente dalla tabella 'utenti'
-      const { data: userData, error: userError } = await supabase
-        .from("utenti")
-        .select("*")
-        .eq("email", email)
-        .single();
-
-      if (userError || !userData) {
-        alert("⚠️ Login succeeded, but user data not found.");
-        return;
-      }
-
-      // Salva i dati localmente
       localStorage.setItem("access_verified", "true");
       localStorage.setItem("user_verified", "true");
-      localStorage.setItem("user_info", JSON.stringify(userData));
-
-      // Redirect
       window.location.href = localStorage.getItem("origin_page") || "https://alestore-official.github.io/AleInfo";
     });
   </script>
