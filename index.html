@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Login to AleStore</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://alestore-official.github.io/control.js"></script>
+  <script src="https://alestore-official.github.io/AleCAPTCHA/control.js"></script>
   <style>
     body {
       background: #f4f4f4;
@@ -65,7 +65,7 @@
     import { createClient } from 'https://esm.sh/@supabase/supabase-js';
     const supabase = createClient(
       'https://hsyyrcbibohwvbuwxwok.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo'
+      'YOUR_SUPABASE_ANON_KEY'
     );
 
     const form = document.getElementById("form");
@@ -75,26 +75,26 @@
       const password = form.password.value;
 
       // Check if email is confirmed via Supabase Auth
-      const { data: authData } = await supabase.auth.getUser();
-      if (!authData?.user?.email_confirmed_at) {
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user?.email_confirmed_at) {
         alert("❌ Email not confirmed. Please check your inbox.");
         return;
       }
 
-      // Check credentials in 'users' table
+      // Check credentials in 'utenti' table
       const { data, error } = await supabase
-        .from("users")
+        .from("utenti")
         .select("*")
         .eq("email", email)
         .eq("password", password)
         .single();
 
-      if (data) {
+      if (error || !data) {
+        alert("❌ Invalid credentials.");
+      } else {
         localStorage.setItem("access_verified", "true");
         localStorage.setItem("user_verified", "true");
         window.location.href = localStorage.getItem("origin_page") || "https://alestore-official.github.io/AleInfo.html";
-      } else {
-        alert("❌ Invalid credentials.");
       }
     });
   </script>
