@@ -2,65 +2,105 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Login to AleStore</title>
+  <title>Login - AleStore</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      background: #f4f4f4;
+      background: linear-gradient(135deg, #e0f7fa, #fce4ec);
       font-family: 'Segoe UI', sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       margin: 0;
+      overflow: hidden;
     }
-    .box {
-      background: #fff;
+
+    .glass-box {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 16px;
       padding: 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
       max-width: 400px;
       width: 100%;
+      animation: fadeInUp 0.8s ease-out;
+      transition: transform 0.3s ease;
+      text-align: center;
     }
+
+    .glass-box:hover {
+      transform: scale(1.02);
+    }
+
     h2 {
       margin-bottom: 20px;
       color: #333;
     }
+
     input, button {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
       font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background: #007bff;
-      color: #fff;
+      border-radius: 8px;
       border: none;
+      outline: none;
+      background: rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(6px);
+      color: #333;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    button {
+      background: rgba(0, 123, 255, 0.6);
+      color: white;
+      font-weight: bold;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
+
     button:hover {
-      background: #0056b3;
+      background: rgba(0, 123, 255, 0.8);
     }
+
     .link {
       display: block;
       margin-top: 20px;
       color: #007bff;
       text-decoration: none;
       font-size: 14px;
+      transition: color 0.3s ease;
+    }
+
+    .link:hover {
+      color: #0056b3;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h2>Login</h2>
+  <div class="glass-box">
+    <h2>Login to your account</h2>
     <form id="form">
       <input type="email" name="email" placeholder="Email" required />
       <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Login</button>
     </form>
+
+    <button id="reset-btn">Reset Password</button>
+
     <a class="link" href="https://alestore-official.github.io/AleRegister">Don't have an account? Register</a>
   </div>
 
@@ -72,6 +112,8 @@
     );
 
     const form = document.getElementById("form");
+    const resetBtn = document.getElementById("reset-btn");
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = form.email.value.trim().toLowerCase();
@@ -96,6 +138,24 @@
       localStorage.setItem("user_verified", "true");
       localStorage.setItem("user_info", JSON.stringify(data.user));
       window.location.href = "https://alestore-official.github.io/AleInfo";
+    });
+
+    resetBtn.addEventListener("click", async () => {
+      const email = form.email.value.trim().toLowerCase();
+      if (!email) {
+        alert("Please enter your email first.");
+        return;
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: "https://alestore-official.github.io/AleReset"
+      });
+
+      if (error) {
+        alert("❌ " + error.message);
+      } else {
+        alert("📩 Reset email sent. Check your inbox.");
+      }
     });
   </script>
 </body>
