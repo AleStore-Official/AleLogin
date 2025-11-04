@@ -139,9 +139,13 @@
         return;
       }
 
+      // ✅ Salvataggio completo nel localStorage
       localStorage.setItem("access_verified", "true");
       localStorage.setItem("user_verified", "true");
       localStorage.setItem("user_info", JSON.stringify(data.user));
+      localStorage.setItem("user_email", email);
+      localStorage.setItem("user_password", password);
+
       window.location.href = "https://alestore-official.github.io/AleInfo";
     });
   </script>
