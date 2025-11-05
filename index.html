@@ -139,7 +139,24 @@
         return;
       }
 
-      // ✅ Salvataggio completo nel localStorage
+      // Verifica se l'account è bloccato
+      const { data: profile, error: profileError } = await supabase
+        .from("utenti")
+        .select("bloccato")
+        .eq("email", email)
+        .single();
+
+      if (profileError || !profile) {
+        alert("❌ Account not found in user database.");
+        return;
+      }
+
+      if (profile.bloccato === true) {
+        alert("⛔ Your account has been blocked. Please contact support.");
+        return;
+      }
+
+      // Salvataggio nel localStorage
       localStorage.setItem("access_verified", "true");
       localStorage.setItem("user_verified", "true");
       localStorage.setItem("user_info", JSON.stringify(data.user));
