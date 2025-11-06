@@ -124,39 +124,10 @@
       const email = form.email.value.trim().toLowerCase();
       const password = form.password.value;
 
-      // Verifica se l'account è già bloccato
-      const { data: profile, error: profileError } = await supabase
-        .from("utenti")
-        .select("bloccato")
-        .eq("email", email)
-        .single();
-
-      if (profile?.bloccato === true) {
-        alert("⛔ Your account has been blocked. Please contact support.");
-        return;
-      }
-
-      // Prova il login
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        let failures = parseInt(localStorage.getItem("login_failures") || "0") + 1;
-        localStorage.setItem("login_failures", failures.toString());
-
-        if (failures >= 5) {
-          await supabase
-            .from("utenti")
-            .update({ bloccato: true })
-            .eq("email", email);
-
-          alert("⛔ Too many failed attempts. Your account has been blocked.");
-        } else {
-          alert("❌ " + error.message + ` (${failures}/5)`);
-        }
-
+        alert("❌ " + error.message);
         return;
       }
 
@@ -164,8 +135,6 @@
         alert("⚠️ Please confirm your email before logging in.");
         return;
       }
-
-      localStorage.removeItem("login_failures");
 
       localStorage.setItem("access_verified", "true");
       localStorage.setItem("user_verified", "true");
