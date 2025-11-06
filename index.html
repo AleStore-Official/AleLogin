@@ -21,13 +21,16 @@
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 20px;
       padding: 40px;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1),
-                  inset 0 0 0.5px rgba(255, 255, 255, 0.4);
+      box-shadow:
+        0 4px 30px rgba(0, 0, 0, 0.1),
+        inset 0 0 0.5px rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       max-width: 400px;
       width: 90%;
       text-align: center;
       animation: fadeInUp 0.8s ease-out;
+      transition: transform 0.3s ease;
     }
 
     .glass-box:hover {
@@ -103,16 +106,15 @@
       <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Login</button>
     </form>
+
     <a class="link" href="https://alestore-official.github.io/AleRegister">Don't have an account? Register</a>
   </div>
 
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js';
-    import bcrypt from 'https://esm.sh/bcryptjs';
-
     const supabase = createClient(
       'https://hsyyrcbibohwvbuwxwok.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwfcA7Z9oglVthiaE1jWYuQ6HMMm5UXsyo'
     );
 
     const form = document.getElementById("form");
@@ -122,35 +124,23 @@
       const email = form.email.value.trim().toLowerCase();
       const password = form.password.value;
 
-      const { data: authData, error: authError } = await supabase.auth.getUser();
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
-      if (authError || !authData?.user?.email_confirmed_at) {
-        alert("⚠️ Email non confermata. Controlla la tua casella di posta.");
+      if (error) {
+        alert("❌ " + error.message);
         return;
       }
 
-      const { data: utente, error: dbError } = await supabase
-        .from("utenti")
-        .select("email, password, nome, cognome")
-        .eq("email", email)
-        .single();
-
-      if (!utente || dbError) {
-        alert("❌ Utente non trovato.");
-        return;
-      }
-
-      const match = await bcrypt.compare(password, utente.password);
-
-      if (!match) {
-        alert("❌ Password errata.");
+      if (!data.user.emailconfirmedat) {
+        alert("⚠️ Please confirm your email before logging in.");
         return;
       }
 
       localStorage.setItem("access_verified", "true");
       localStorage.setItem("user_verified", "true");
-      localStorage.setItem("user_info", JSON.stringify(utente));
+      localStorage.setItem("user_info", JSON.stringify(data.user));
       localStorage.setItem("user_email", email);
+      localStorage.setItem("user_password", password);
 
       window.location.href = "https://alestore-official.github.io/AleInfo";
     });
