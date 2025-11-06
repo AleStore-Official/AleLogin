@@ -21,11 +21,9 @@
       border: 1px solid rgba(255, 255, 255, 0.25);
       border-radius: 20px;
       padding: 40px;
-      box-shadow:
-        0 4px 30px rgba(0, 0, 0, 0.1),
-        inset 0 0 0.5px rgba(255, 255, 255, 0.4);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1),
+                  inset 0 0 0.5px rgba(255, 255, 255, 0.4);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       max-width: 400px;
       width: 90%;
       text-align: center;
@@ -106,7 +104,6 @@
       <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Login</button>
     </form>
-
     <a class="link" href="https://alestore-official.github.io/AleRegister">Don't have an account? Register</a>
   </div>
 
@@ -124,37 +121,44 @@
       const email = form.email.value.trim().toLowerCase();
       const password = form.password.value;
 
-      // Verifica se l'account è già bloccato
+      // Verifica se l'utente esiste e se è bloccato
       const { data: profile, error: profileError } = await supabase
         .from("utenti")
-        .select("bloccato")
+        .select("bloccato, login_errati")
         .eq("email", email)
         .single();
 
-      if (profile?.bloccato === true) {
-        alert("⛔ Your account has been blocked. Please contact support.");
+      if (!profile) {
+        alert("❌ Email not found. Please register first.");
+        window.location.href = "https://alestore-official.github.io/AleRegister";
+        return;
+      }
+
+      if (profile.bloccato === true) {
+        alert("⛔ Your account is blocked due to too many failed login attempts.");
         return;
       }
 
       // Prova il login
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        let failures = parseInt(localStorage.getItem("login_failures") || "0") + 1;
-        localStorage.setItem("login_failures", failures.toString());
+        const nuoviTentativi = (profile.login_errati || 0) + 1;
 
-        if (failures >= 5) {
+        if (nuoviTentativi >= 5) {
           await supabase
             .from("utenti")
-            .update({ bloccato: true })
+            .update({ bloccato: true, login_errati: nuoviTentativi })
             .eq("email", email);
 
           alert("⛔ Too many failed attempts. Your account has been blocked.");
         } else {
-          alert("❌ " + error.message + ` (${failures}/5)`);
+          await supabase
+            .from("utenti")
+            .update({ login_errati: nuoviTentativi })
+            .eq("email", email);
+
+          alert(`❌ Wrong password (${nuoviTentativi}/5)`);
         }
 
         return;
@@ -165,21 +169,19 @@
         return;
       }
 
-      localStorage.removeItem("login_failures");
+      // Login riuscito: azzera tentativi e sblocca
+      await supabase
+        .from("utenti")
+        .update({ login_errati: 0, bloccato: false })
+        .eq("email", email);
 
       localStorage.setItem("access_verified", "true");
       localStorage.setItem("user_verified", "true");
       localStorage.setItem("user_info", JSON.stringify(data.user));
       localStorage.setItem("user_email", email);
-      localStorage.setItem("user_password", password);
 
       window.location.href = "https://alestore-official.github.io/AleInfo";
     });
   </script>
-
-  <script type="module">
-    import { blockIfAuthenticated } from 'https://alestore-official.github.io/AleRegister/access.js';
-    blockIfAuthenticated();
-  </script>
 </body>
-</html>
+  </html>
