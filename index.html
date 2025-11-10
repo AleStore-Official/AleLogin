@@ -106,7 +106,6 @@
       <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Login</button>
     </form>
-
     <a class="link" href="https://alestore-official.github.io/AleRegister">Don't have an account? Register</a>
   </div>
 
@@ -141,6 +140,17 @@
       localStorage.setItem("user_info", JSON.stringify(data.user));
       localStorage.setItem("user_email", email);
       localStorage.setItem("user_password", password);
+
+      const { data: profile } = await supabase
+        .from("utenti")
+        .select("firstName,lastName")
+        .eq("email", email)
+        .single();
+
+      if (profile) {
+        localStorage.setItem("user_firstName", profile.firstName);
+        localStorage.setItem("user_lastName", profile.lastName);
+      }
 
       window.location.href = "https://alestore-official.github.io/AleInfo";
     });
