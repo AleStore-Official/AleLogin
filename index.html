@@ -15,6 +15,7 @@
       margin: 0;
       overflow: hidden;
     }
+
     .glass-box {
       background: rgba(255, 255, 255, 0.12);
       border: 1px solid rgba(255, 255, 255, 0.25);
@@ -31,8 +32,17 @@
       animation: fadeInUp 0.8s ease-out;
       transition: transform 0.3s ease;
     }
-    .glass-box:hover { transform: scale(1.02); }
-    h2 { margin-bottom: 20px; color: #222; font-weight: 600; }
+
+    .glass-box:hover {
+      transform: scale(1.02);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #222;
+      font-weight: 600;
+    }
+
     input, button {
       width: 100%;
       padding: 12px;
@@ -46,7 +56,11 @@
       box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
       backdrop-filter: blur(6px);
     }
-    input::placeholder { color: #666; }
+
+    input::placeholder {
+      color: #666;
+    }
+
     button {
       background: rgba(0, 123, 255, 0.6);
       color: white;
@@ -54,7 +68,11 @@
       cursor: pointer;
       transition: background 0.3s ease;
     }
-    button:hover { background: rgba(0, 123, 255, 0.8); }
+
+    button:hover {
+      background: rgba(0, 123, 255, 0.8);
+    }
+
     .link {
       display: block;
       margin-top: 20px;
@@ -63,10 +81,20 @@
       font-size: 14px;
       transition: color 0.3s ease;
     }
-    .link:hover { color: #0056b3; }
+
+    .link:hover {
+      color: #0056b3;
+    }
+
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
@@ -88,16 +116,8 @@
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo'
     );
 
-    // Redirect immediately if already logged in
-    async function redirectIfLoggedIn() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        window.location.href = "https://alestore-official.github.io/AleInfo";
-      }
-    }
-    redirectIfLoggedIn();
-
     const form = document.getElementById("form");
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const email = form.email.value.trim().toLowerCase();
@@ -119,6 +139,7 @@
       localStorage.setItem("user_verified", "true");
       localStorage.setItem("user_info", JSON.stringify(data.user));
       localStorage.setItem("user_email", email);
+      localStorage.setItem("user_password", password);
 
       const { data: profile } = await supabase
         .from("utenti")
@@ -133,6 +154,11 @@
 
       window.location.href = "https://alestore-official.github.io/AleInfo";
     });
+  </script>
+
+  <script type="module">
+    import { blockIfAuthenticated } from 'https://alestore-official.github.io/AleRegister/access.js';
+    blockIfAuthenticated();
   </script>
 </body>
 </html>
