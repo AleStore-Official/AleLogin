@@ -130,17 +130,6 @@
       localStorage.setItem("user_email", email);
       localStorage.setItem("user_password", password);
 
-      const { data: profile } = await supabase
-        .from("utenti")
-        .select("firstName,lastName")
-        .eq("email", email)
-        .single();
-
-      if (profile) {
-        localStorage.setItem("user_firstName", profile.firstName);
-        localStorage.setItem("user_lastName", profile.lastName);
-      }
-
       window.location.href = "https://alestore-official.github.io/AleInfo";
     });
   </script>
