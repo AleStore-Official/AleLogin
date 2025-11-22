@@ -102,7 +102,7 @@
     import { createClient } from 'https://esm.sh/@supabase/supabase-js';
     const supabase = createClient(
       'https://hsyyrcbibohwvbuwxwok.supabase.co',
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwf_cA7Z9oglVthiaE1_jWYuQ6HMMm5UXsyo'
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzeXlyY2JpYm9od3ZidXd4d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEwNjE0MDcsImV4cCI6MjA3NjYzNzQwN30.2KsFsGYjwfcA7Z9oglVthiaE1jWYuQ6HMMm5UXsy'
     );
 
     const form = document.getElementById("form");
@@ -112,10 +112,25 @@
       const email = form.email.value.trim().toLowerCase();
       const password = form.password.value;
 
+      const lockUntil = localStorage.getItem("lock_until");
+      if (lockUntil && Date.now() < parseInt(lockUntil)) {
+        alert("⛔ Account locked on this device for 4 hours.");
+        return;
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
       if (error) {
-        alert("❌ " + error.message);
+        let attempts = parseInt(localStorage.getItem("failed_attempts") || "0") + 1;
+        localStorage.setItem("failed_attempts", attempts);
+
+        if (attempts >= 5) {
+          const banTime = Date.now() + 4 * 60 * 60 * 1000;
+          localStorage.setItem("lock_until", banTime.toString());
+          alert("⛔ Too many wrong attempts. Account locked for 4 hours.");
+        } else {
+          alert("❌ Wrong password. Attempt " + attempts + " of 5.");
+        }
         return;
       }
 
@@ -123,6 +138,9 @@
         alert("⚠️ Please confirm your email before logging in.");
         return;
       }
+
+      localStorage.removeItem("failed_attempts");
+      localStorage.removeItem("lock_until");
 
       localStorage.setItem("access_verified", "true");
       localStorage.setItem("user_verified", "true");
@@ -134,10 +152,6 @@
     });
   </script>
 
-  <script type="module">
-    import { blockIfAuthenticated } from 'https://alestore-official.github.io/AleRegister/access.js';
-    blockIfAuthenticated();
-  </script>
   <script src="https://alestore-official.github.io/AleCAPTCHA/control.js"></script>
 </body>
 </html>
