@@ -99,10 +99,10 @@
   </div>
 
   <script>
-    if (localStorage.getItem("access_verified") === "true") {
-      window.location.href = "https://alestore-official.github.io/AleInfo"
-    }
-    if (localStorage.getItem("user_verified") === "true") {
+    if (
+      localStorage.getItem("user_verified") === "true" &&
+      localStorage.getItem("access_verified") === "true"
+    ) {
       window.location.href = "https://alestore-official.github.io/AleInfo"
     }
   </script>
